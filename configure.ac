@@ -562,6 +562,21 @@ AC_CACHE_CHECK([asm volatile support],
 if test "x${je_cv_asm_volatile}" = "xyes"; then
   AC_DEFINE([JEMALLOC_HAVE_ASM_VOLATILE], [ ], [ ])
 fi
+AC_CACHE_CHECK([__int128 support],
+               [je_cv_int128],
+               AC_RUN_IFELSE([AC_LANG_PROGRAM(
+[[
+]],
+[[
+      __int128 temp = 0;
+      return temp;
+]])],
+[je_cv_int128=yes],
+[je_cv_int128=no],
+[je_cv_int128=no]))
+if test "x${je_cv_int128}" = "xyes"; then
+  AC_DEFINE([JEMALLOC_HAVE_INT128], [ ], [ ])
+fi
 
 LD_PRELOAD_VAR="LD_PRELOAD"
 so="so"
@@ -878,11 +893,26 @@ AC_SUBST([DUMP_SYMS])
 AC_SUBST([CC_MM])
 
 dnl Determine whether libm must be linked to use e.g. log(3).
-AC_SEARCH_LIBS([log], [m], , [AC_MSG_ERROR([Missing math functions])])
-if test "x$ac_cv_search_log" != "xnone required" ; then
-  LM="$ac_cv_search_log"
-else
+
+# On MSVC, log is an intrinsic that doesn't require libm. However,
+# AC_SEARCH_LIBS does not successfully detect this, as it will try to compile
+# a program using the wrong signature for log. Newer versions of MSVC CL detects
+# this and rejects the program with the following messages.
+#
+# conftest.c(40): warning C4391: 'char log()': incorrect return type for intrinsic function, expected 'double'
+# conftest.c(44): error C2168: 'log': too few actual parameters for intrinsic function
+#
+# Since log is always available on MSVC (it's been around since the dawn of
+# time), we simply always assume it's there if MSVC is detected.
+if test "x$je_cv_msvc" = "xyes" ; then
   LM=
+else
+  AC_SEARCH_LIBS([log], [m], , [AC_MSG_ERROR([Missing math functions])])
+    if test "x$ac_cv_search_log" != "xnone required" ; then
+      LM="$ac_cv_search_log"
+    else
+      LM=
+    fi
 fi
 AC_SUBST(LM)
 
@@ -1416,6 +1446,33 @@ if test "x$backtrace_method" = "x" -a "x$enable_prof_libunwind" = "x1" ; then
     backtrace_method="libunwind"
     AC_DEFINE([JEMALLOC_PROF_LIBUNWIND], [ ], [ ])
   fi
+fi
+
+if test `uname -s` = "Linux"
+then
+  AC_ARG_ENABLE([prof-frameptr],
+    [AS_HELP_STRING([--enable-prof-frameptr], [Use optimized frame pointer unwinder for backtracing (Linux only)])],
+  [if test "x$enable_prof_frameptr" = "xno" ; then
+    enable_prof_frameptr="0"
+  else
+    enable_prof_frameptr="1"
+    if test "x$enable_prof" = "x0" ; then
+      AC_MSG_ERROR([--enable-prof-frameptr should only be used with --enable-prof])
+    fi
+  fi
+  ],
+  [enable_prof_frameptr="0"]
+  )
+  if test "x$backtrace_method" = "x" -a "x$enable_prof_frameptr" = "x1" \
+      -a "x$GCC" = "xyes" ; then
+    JE_CFLAGS_ADD([-fno-omit-frame-pointer])
+    backtrace_method="frame pointer linux"
+    AC_DEFINE([JEMALLOC_PROF_FRAME_POINTER], [ ], [ ])
+  else
+    enable_prof_frameptr="0"
+  fi
+else
+  enable_prof_frameptr="0"
 fi
 
 AC_ARG_ENABLE([prof-libgcc],
@@ -2817,6 +2874,7 @@ AC_MSG_RESULT([stats              : ${enable_stats}])
 AC_MSG_RESULT([experimental_smallocx : ${enable_experimental_smallocx}])
 AC_MSG_RESULT([prof               : ${enable_prof}])
 AC_MSG_RESULT([prof-libunwind     : ${enable_prof_libunwind}])
+AC_MSG_RESULT([prof-frameptr      : ${enable_prof_frameptr}])
 AC_MSG_RESULT([prof-libgcc        : ${enable_prof_libgcc}])
 AC_MSG_RESULT([prof-gcc           : ${enable_prof_gcc}])
 AC_MSG_RESULT([fill               : ${enable_fill}])

@@ -167,6 +167,9 @@
 /* Use gcc intrinsics for profile backtracing if defined. */
 #undef JEMALLOC_PROF_GCC
 
+/* Use frame pointer for profile backtracing if defined. Linux only. */
+#undef JEMALLOC_PROF_FRAME_POINTER
+
 /* JEMALLOC_PAGEID enabled page id */
 #undef JEMALLOC_PAGEID
 
@@ -453,6 +456,9 @@
  * and the processor ID.
  */
 #undef JEMALLOC_HAVE_RDTSCP
+
+/* If defined, use __int128 for optimization. */
+#undef JEMALLOC_HAVE_INT128
 
 #include "jemalloc/internal/jemalloc_internal_overrides.h"
 

@@ -34,6 +34,7 @@ bool opt_prof_final = false;
 bool opt_prof_leak = false;
 bool opt_prof_leak_error = false;
 bool opt_prof_accum = false;
+bool opt_prof_pid_namespace = false;
 char opt_prof_prefix[PROF_DUMP_FILENAME_LEN];
 bool opt_prof_sys_thread_name = false;
 bool opt_prof_unbias = true;
@@ -165,7 +166,7 @@ prof_malloc_sample_object(tsd_t *tsd, const void *ptr, size_t size,
 	if (prof_sample_hook != NULL) {
 		prof_bt_t *bt = &tctx->gctx->bt;
 		pre_reentrancy(tsd, NULL);
-		prof_sample_hook(ptr, size, bt->vec, bt->len);
+		prof_sample_hook(ptr, size, bt->vec, bt->len, usize);
 		post_reentrancy(tsd);
 	}
 }

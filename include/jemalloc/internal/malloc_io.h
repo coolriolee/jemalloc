@@ -134,4 +134,32 @@ malloc_read_fd(int fd, void *buf, size_t count) {
 	return bytes_read;
 }
 
+static inline int malloc_open(const char *path, int flags) {
+	int fd;
+#if defined(JEMALLOC_USE_SYSCALL) && defined(SYS_open)
+	fd = (int)syscall(SYS_open, path, flags);
+#elif defined(JEMALLOC_USE_SYSCALL) && defined(SYS_openat)
+	fd = (int)syscall(SYS_openat, AT_FDCWD, path, flags);
+#else
+	fd = open(path, flags);
+#endif
+	return fd;
+}
+
+static inline int malloc_close(int fd) {
+#if defined(JEMALLOC_USE_SYSCALL) && defined(SYS_close)
+	return (int)syscall(SYS_close, fd);
+#else
+	return close(fd);
+#endif
+}
+
+static inline off_t malloc_lseek(int fd, off_t offset, int whence) {
+#if defined(JEMALLOC_USE_SYSCALL) && defined(SYS_lseek)
+  return (off_t)syscall(SYS_lseek, fd, offset, whence);
+#else
+  return lseek(fd, offset, whence);
+#endif
+}
+
 #endif /* JEMALLOC_INTERNAL_MALLOC_IO_H */

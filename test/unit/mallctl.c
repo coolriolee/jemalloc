@@ -255,6 +255,7 @@ TEST_BEGIN(test_mallctl_config) {
 	TEST_MALLCTL_CONFIG(prof, bool);
 	TEST_MALLCTL_CONFIG(prof_libgcc, bool);
 	TEST_MALLCTL_CONFIG(prof_libunwind, bool);
+	TEST_MALLCTL_CONFIG(prof_frameptr, bool);
 	TEST_MALLCTL_CONFIG(stats, bool);
 	TEST_MALLCTL_CONFIG(utrace, bool);
 	TEST_MALLCTL_CONFIG(xmalloc, bool);
@@ -292,6 +293,7 @@ TEST_BEGIN(test_mallctl_opt) {
 	TEST_MALLCTL_OPT(size_t, hpa_sec_max_bytes, always);
 	TEST_MALLCTL_OPT(size_t, hpa_sec_bytes_after_flush, always);
 	TEST_MALLCTL_OPT(size_t, hpa_sec_batch_fill_extra, always);
+	TEST_MALLCTL_OPT(ssize_t, experimental_hpa_max_purge_nhp, always);
 	TEST_MALLCTL_OPT(unsigned, narenas, always);
 	TEST_MALLCTL_OPT(const char *, percpu_arena, always);
 	TEST_MALLCTL_OPT(size_t, oversize_threshold, always);
@@ -317,6 +319,7 @@ TEST_BEGIN(test_mallctl_opt) {
 	TEST_MALLCTL_OPT(unsigned, prof_bt_max, prof);
 	TEST_MALLCTL_OPT(ssize_t, lg_prof_sample, prof);
 	TEST_MALLCTL_OPT(bool, prof_accum, prof);
+	TEST_MALLCTL_OPT(bool, prof_pid_namespace, prof);
 	TEST_MALLCTL_OPT(ssize_t, lg_prof_interval, prof);
 	TEST_MALLCTL_OPT(bool, prof_gdump, prof);
 	TEST_MALLCTL_OPT(bool, prof_final, prof);
@@ -876,6 +879,7 @@ TEST_BEGIN(test_arenas_constants) {
 
 	TEST_ARENAS_CONSTANT(size_t, quantum, QUANTUM);
 	TEST_ARENAS_CONSTANT(size_t, page, PAGE);
+	TEST_ARENAS_CONSTANT(size_t, hugepage, HUGEPAGE);
 	TEST_ARENAS_CONSTANT(unsigned, nbins, SC_NBINS);
 	TEST_ARENAS_CONSTANT(unsigned, nlextents, SC_NSIZES - SC_NBINS);
 

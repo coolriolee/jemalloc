@@ -29,6 +29,7 @@ extern void (*JET_MUTABLE invalid_conf_abort)(void);
 extern bool opt_utrace;
 extern bool opt_xmalloc;
 extern bool opt_experimental_infallible_new;
+extern bool opt_experimental_tcache_gc;
 extern bool opt_zero;
 extern unsigned opt_narenas;
 extern zero_realloc_action_t opt_zero_realloc_action;
@@ -37,6 +38,10 @@ extern const char *const zero_realloc_mode_names[];
 extern atomic_zu_t zero_realloc_count;
 extern bool opt_cache_oblivious;
 extern unsigned opt_debug_double_free_max_scan;
+extern size_t opt_calloc_madvise_threshold;
+
+extern const char *opt_malloc_conf_symlink;
+extern const char *opt_malloc_conf_env_var;
 
 /* Escape free-fastpath when ptr & mask == 0 (for sanitization purpose). */
 extern uintptr_t san_cache_bin_nonfast_mask;
